@@ -3,62 +3,43 @@ require "./app/models/user"
 class ApplicationController < Sinatra::Base
 
   configure do
-    set :views, "app/views"
-    enable :sessions
-    set :session_secret, "password_security"
+    set :public_folder, 'public'
+    set :views, 'app/views'
   end
 
-  get "/" do
+  get '/posts/new' do
+    erb :new
+  end
+  post '/posts' do
+    @posts = Post.create(params)
+    redirects to '/posts'
+
+  end
+  get '/posts' do
+    @posts = Post.all
     erb :index
   end
+  get '/posts/:id' do
+    @posts = Post.find(params[:id])
+    erb :show
 
-  get "/signup" do
-    erb :signup
+  end
+  get '/posts/:id/edit' do
+    @posts = Post.find_by_id(params[:id])
+    erb :edit
+  end
+  patch '/posts/:id' do
+    @posts = Post.find_by_id(params[:id])
+    @posts.name = params[:name]
+    @posts.content = params[:content]
+    @posts.save
+    erb :show
+  end
+  delete '/posts/:id/delete' do
+    @posts = Post.find_by_id(params[:id])
+    @posts.delete
+    erb :deleted
   end
 
-	post "/signup" do
-		user = User.new(:username => params[:username], :password => params[:password])
-
-		if user.save
-			redirect '/login'
-		else
-			redirect '/failure'
-		end
-	end
-
-  
-
-  get '/account' do
-    @user = User.find(session[:user_id])
-    erb :account
-  end
-
-
-  get "/login" do
-    erb :login
-  end
-
-  post "/login" do
-    ##your code here
-  end
-
-  get "/failure" do
-    erb :failure
-  end
-
-  get "/logout" do
-    session.clear
-    redirect "/"
-  end
-
-  helpers do
-    def logged_in?
-      !!session[:user_id]
-    end
-
-    def current_user
-      User.find(session[:user_id])
-    end
-  end
 
 end
